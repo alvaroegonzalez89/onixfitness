@@ -12,6 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <style>
 :root{
@@ -257,7 +258,7 @@ tr:hover td{background:rgba(255,255,255,.02);}
 h1,h2,h3,.display{font-weight:400;letter-spacing:.8px;}
 .stat-card .num,.month-label,.brand-name,.plan-option .pname{font-weight:400;}
 #loader{background:#0D0D0D;} #loader p{color:#BDBDB6;}
-#loginScreen,#inscripcionScreen{background:#fff;}
+#loginScreen,#inscripcionScreen{background:var(--bg);}
 .login-box::before{display:none;}
 .login-logo,.insc-header .login-logo{display:block;background:#0D0D0D;border-radius:12px;padding:20px 24px;margin-bottom:16px;}
 .login-title{margin-top:0;}
@@ -294,6 +295,44 @@ h1,h2,h3,.display{font-weight:400;letter-spacing:.8px;}
 .tarifa-chip{flex:1;min-width:140px;display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:10px 14px;border:2px solid var(--border);border-radius:12px;background:#fff;font:inherit;color:var(--text);text-align:left;}
 .tarifa-chip b{font-family:'Anton',sans-serif;font-weight:400;font-size:20px;} .tarifa-chip span{font-size:12px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.5px;}
 .tarifa-chip.sel{border-color:#111;background:#FFDD67;} .tarifa-chip.sel span{color:#111;}
+
+/* ===== V2: look editorial + móvil primero ===== */
+:root{--bg:#F6F3EC;--bg-2:#EFEBE1;--radius:20px;--chev:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='130' viewBox='0 0 170 130'%3E%3Cg fill='none' stroke='%23FFDD67' stroke-opacity='.2' stroke-width='15'%3E%3Cpath d='M20 10l48 55-48 55'/%3E%3Cpath d='M78 10l48 55-48 55'/%3E%3C/g%3E%3C/svg%3E");}
+body{background:var(--bg);}
+.card,.stat-card,.col,.insc-box,.modal{border-color:transparent;border-radius:20px;box-shadow:0 1px 2px rgba(0,0,0,.04),0 10px 28px rgba(30,25,10,.07);}
+.topbar h1{font-size:32px;}
+.btn{border-radius:999px;} .field input,.field select,.field textarea,.sel-filtro{border-radius:12px;}
+th{color:#111;border-bottom:2px solid #111;} tbody tr:hover{background:#FFF8DE;}
+.stats-row .stat-card.orange{background:#0D0D0D var(--chev) right -10px center/auto 130% no-repeat;border:0;}
+.stats-row .stat-card.orange .num{color:#FFDD67;font-size:44px;} .stats-row .stat-card.orange .lbl{color:#BDBDB6;}
+@media(min-width:700px){.stats-row .stat-card.orange{grid-column:span 2;}}
+#socioScreen{display:none;min-height:100vh;background:var(--bg);padding:14px 14px 40px;}
+.soc-box{width:100%;max-width:460px;margin:0 auto;}
+.soc-card{background:#0D0D0D var(--chev) right -30px bottom -10px/230px no-repeat;color:#fff;border-radius:24px;padding:22px;margin-bottom:14px;}
+.soc-card .logo{width:120px;height:38px;margin-bottom:20px;}
+.soc-card .nm{font-family:'Anton',sans-serif;font-size:32px;letter-spacing:1px;text-transform:uppercase;line-height:1.1;}
+.soc-stat{display:inline-block;margin-top:14px;padding:7px 15px;border-radius:999px;font-weight:700;font-size:13px;}
+.soc-stat.ok{background:#FFDD67;color:#111;} .soc-stat.pend{background:#fff;color:#8A5A00;}
+.checkin{background:#FFDD67;border-radius:20px;padding:18px;text-align:center;margin-bottom:14px;}
+.checkin b{display:block;font-family:'Anton',sans-serif;font-weight:400;font-size:26px;letter-spacing:.5px;}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;text-align:center;}
+.cal span{aspect-ratio:1;display:flex;align-items:center;justify-content:center;border-radius:12px;font-size:13px;background:#F4F1E8;color:#6A6A64;}
+.cal span.h{background:none;aspect-ratio:auto;font-size:11px;font-weight:700;color:#111;}
+.cal span.on{background:#FFDD67;color:#111;font-weight:700;} .cal span.hoy{outline:2px solid #111;}
+.pay-row{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px 0;border-bottom:1px solid var(--border);font-size:14px;}
+.pay-row small{display:block;color:var(--text-muted);font-size:12px;}
+.btn-block{width:100%;justify-content:center;margin-bottom:10px;}
+@media(max-width:900px){
+  .sidebar{left:0 !important;right:0;top:auto;bottom:0;width:auto;height:auto;flex-direction:row;align-items:stretch;gap:2px;padding:6px 8px calc(6px + env(safe-area-inset-bottom));overflow-x:auto;overflow-y:hidden;border-radius:22px 22px 0 0;box-shadow:0 -8px 30px rgba(0,0,0,.25);}
+  .sidebar .brand,.sidebar .nav-footer{display:none;}
+  .sidebar .nav-item{flex-direction:column;justify-content:center;gap:3px;min-width:72px;padding:8px 6px;font-size:10px;text-align:center;border-left:0 !important;border-radius:14px;white-space:nowrap;flex-shrink:0;}
+  .sidebar .nav-item.active{background:#FFDD67;color:#111;} .sidebar .nav-item.active .icon{color:#111;}
+  .mobile-menu-btn{display:none !important;}
+  main{padding:18px 14px 110px;} .topbar h1{font-size:26px;}
+  .stats-row{grid-template-columns:1fr 1fr;gap:12px;} .stats-row .stat-card.orange{grid-column:1/-1;}
+  .modal-overlay{align-items:flex-end;padding:0;} .modal{max-width:none;border-radius:24px 24px 0 0;max-height:92vh;}
+  .btn{min-height:44px;} input,select,textarea{font-size:16px !important;}
+}
 </style>
 </head>
 <body>
@@ -331,8 +370,7 @@ h1,h2,h3,.display{font-weight:400;letter-spacing:.8px;}
     <button class="nav-item active" data-view="dashboard"><span class="icon icon-md"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg></span> Dashboard</button>
     <button class="nav-item" data-view="actividades"><span class="icon icon-md"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="5" height="18"></rect><rect x="10" y="3" width="5" height="12"></rect><rect x="17" y="3" width="4" height="8"></rect></svg></span> Actividades</button>
     <button class="nav-item" data-view="socios"><span class="icon icon-md"><svg viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg></span> Socios</button>
-    <button class="nav-item" data-view="cuotas"><span class="icon icon-md"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></span> Cuotas</button>
-    <button class="nav-item" data-view="inscripciones"><span class="icon icon-md"><svg viewBox="0 0 24 24"><path d="M9 2h6a1 1 0 0 1 1 1v2H8V3a1 1 0 0 1 1-1z"></path><rect x="4" y="4" width="16" height="18" rx="2"></rect><line x1="8" y1="11" x2="16" y2="11"></line><line x1="8" y1="15" x2="16" y2="15"></line></svg></span> Inscripciones <span class="badge hidden" id="inscBadge">0</span></button>
+    <button class="nav-item" data-view="cuotas"><span class="icon icon-md"><svg viewBox="0 0 24 24"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect><line x1="1" y1="10" x2="23" y2="10"></line></svg></span> Cuotas</button>\1<button class="nav-item" data-view="asistencias"><span class="icon icon-md"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line><polyline points="9 16 11 18 15 14"></polyline></svg></span> Asistencias</button>\1<button class="nav-item" data-view="inscripciones"><span class="icon icon-md"><svg viewBox="0 0 24 24"><path d="M9 2h6a1 1 0 0 1 1 1v2H8V3a1 1 0 0 1 1-1z"></path><rect x="4" y="4" width="16" height="18" rx="2"></rect><line x1="8" y1="11" x2="16" y2="11"></line><line x1="8" y1="15" x2="16" y2="15"></line></svg></span> Inscripciones <span class="badge hidden" id="inscBadge">0</span></button>
     <button class="nav-item" data-view="config"><span class="icon icon-md"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg></span> Configuración</button>
     <div class="nav-footer">
       <button class="nav-item" id="logoutBtn"><span class="icon icon-md"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></span> Salir</button>
@@ -442,6 +480,17 @@ h1,h2,h3,.display{font-weight:400;letter-spacing:.8px;}
     </section>
 
     <!-- ---- INSCRIPCIONES ---- -->
+    <!-- ---- ASISTENCIAS ---- -->
+    <section id="view-asistencias" class="view hidden">
+      <div class="toolbar" style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px;">
+        <input type="month" id="asisMes" class="sel-filtro">
+        <button class="btn btn-primary btn-sm" id="btnAsisDia">Por día</button>
+        <button class="btn btn-ghost btn-sm" id="btnAsisSocio">Por socio</button>
+      </div>
+      <p id="asisResumen" style="font-size:14px;margin-bottom:14px;"></p>
+      <div class="card" id="asisContenido"></div>
+    </section>
+
     <section id="view-inscripciones" class="view hidden">
       <div class="card">
         <div class="card-head"><h2>Inscripciones pendientes</h2></div>
@@ -455,6 +504,19 @@ h1,h2,h3,.display{font-weight:400;letter-spacing:.8px;}
 
     <!-- ---- CONFIG ---- -->
     <section id="view-config" class="view hidden">
+      <div class="card">
+        <div class="card-head"><h2>Asistencia por QR y panel de socios</h2></div>
+        <div class="field"><label>Link del QR (asistencia)</label><div style="display:flex;gap:8px;"><input type="text" id="linkAsis" readonly><button class="btn btn-ghost btn-sm" id="copyLinkAsis">Copiar</button></div></div>
+        <div class="field"><label>Link del panel de socios</label><div style="display:flex;gap:8px;"><input type="text" id="linkSocio" readonly><button class="btn btn-ghost btn-sm" id="copyLinkSocio">Copiar</button></div></div>
+        <div style="text-align:center;margin:16px 0;"><div id="qrBox" style="display:inline-block;background:#fff;padding:14px;border-radius:16px;"></div></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          <button class="btn btn-primary" id="btnQrDescargar">Descargar QR</button>
+          <button class="btn btn-ghost" id="btnQrCartel">Imprimir cartel</button>
+          <button class="btn btn-ghost" id="btnSyncPaneles">Actualizar paneles de socios</button>
+          <button class="btn btn-ghost" id="logoutBtn2">Cerrar sesión</button>
+        </div>
+        <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">El QR apunta a la dirección desde la que estás usando el sistema ahora. Imprimilo recién cuando el sistema esté en su dirección definitiva.</p>
+      </div>
       <div class="card">
         <div class="card-head"><h2>Datos del gimnasio</h2></div>
         <div class="grid-2">
@@ -484,6 +546,29 @@ h1,h2,h3,.display{font-weight:400;letter-spacing:.8px;}
 
     </section>
   </main>
+</div>
+
+<!-- ============ PANEL DEL SOCIO / ASISTENCIA ============ -->
+<div id="socioScreen">
+  <div class="soc-box">
+    <div id="socLogin">
+      <div class="soc-card"><div class="logo"></div><div class="nm">Mi panel</div><p style="color:#BDBDB6;font-size:14px;margin-top:8px;">Ingresá con tu DNI y tu fecha de nacimiento.</p></div>
+      <div class="card">
+        <div class="field"><label>DNI</label><input type="text" id="socDni" inputmode="numeric" autocomplete="off" placeholder="Solo números"></div>
+        <div class="field"><label>Fecha de nacimiento</label><input type="date" id="socNac"></div>
+        <div id="socError"></div>
+        <button class="btn btn-primary btn-block" id="btnSocEntrar">Entrar</button>
+      </div>
+    </div>
+    <div id="socPanel" class="hidden">
+      <div id="socCheckin"></div>
+      <div class="soc-card" id="socCard"></div>
+      <div class="card"><div class="card-head"><h2 id="socMesTitulo"></h2></div><div class="cal" id="socCal"></div><p id="socAsisTxt" style="margin-top:12px;font-size:14px;"></p></div>
+      <div class="card"><div class="card-head"><h2>Mis pagos</h2></div><div id="socPagos"></div></div>
+      <button class="btn btn-primary btn-block hidden" id="btnSocMarcar">Marcar asistencia de hoy</button>
+      <button class="btn btn-ghost btn-block" id="btnSocSalir">Salir de este dispositivo</button>
+    </div>
+  </div>
 </div>
 
 <!-- ============ FORMULARIO PÚBLICO DE INSCRIPCIÓN ============ -->
@@ -649,7 +734,7 @@ const DEFAULT_PLANES = [
 // Escapa texto antes de meterlo en innerHTML (los datos de inscripciones vienen de un formulario público).
 function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function textoSobre(hex){ const h=String(hex||'#999').replace('#',''); const n=parseInt(h.length===3?h.replace(/./g,'$&$&'):h,16)||0; const l=(0.299*(n>>16&255)+0.587*(n>>8&255)+0.114*(n&255))/255; return l>0.62?'#111':'#fff'; }
-function planDe(s){ return planes.find(p=>p.id===s.planId) || planDe(s); }
+function planDe(s){ return planes.find(p=>p.id===s.planId) || planes.find(p=>p.nombre===s.plan); }
 function colorPlan(s){ const p=planDe(s); return (p&&p.color)||'#BDBDB6'; }
 function actPill(s){ const p=planDe(s); if(!p) return esc(s.plan||'—'); return `<span class="act-pill" style="background:${esc(p.color)};color:${textoSobre(p.color)}">${esc(p.nombre)}</span>`; }
 function cumpleFiltroAct(s,id){ const v=$(id).value; return !v || (planDe(s)||{}).id===v; }
@@ -717,11 +802,230 @@ document.querySelectorAll('[data-close-modal]').forEach(b=>{
   b.addEventListener('click', ()=>closeModal(b.dataset.closeModal));
 });
 
-/* ---------------- routing inicial: ¿inscripción pública o panel? ---------------- */
+/* ============================================================
+   V2: CLAVE DE SOCIO, PANEL PÚBLICO Y ASISTENCIAS
+   La clave (hash de DNI + fecha de nacimiento) es el ID del documento:
+   solo quien conoce ambos datos puede leer su panel; no se pueden listar.
+   ============================================================ */
+const LS_CLAVE = 'onix_clave';
+const pad2 = n => String(n).padStart(2,'0');
+async function sha256Hex(t){
+  const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t));
+  return Array.from(new Uint8Array(b)).map(x=>x.toString(16).padStart(2,'0')).join('');
+}
+function claveDe(dni, nac){ return sha256Hex('onix|' + String(dni||'').replace(/\D/g,'') + '|' + String(nac||'').trim()); }
+async function claveSocio(s){
+  if(!s.dni || !s.fechaNacimiento) return null;
+  if(!s._c) s._c = await claveDe(s.dni, s.fechaNacimiento);
+  return s._c;
+}
+function nombreMes(k){ const p = String(k).split('-'); return (MESES[Number(p[1])-1]||'') + ' ' + p[0]; }
+function lsGet(){ try{ return localStorage.getItem(LS_CLAVE); }catch(e){ return null; } }
+function lsSet(v){ try{ if(v) localStorage.setItem(LS_CLAVE, v); else localStorage.removeItem(LS_CLAVE); }catch(e){} }
+
+/* ---- lado Caro: mantener el panel público de cada socio al día ---- */
+function construirPanel(s, pagos){
+  const pl = planDe(s) || {};
+  return {
+    uid: OWNER_UID, nombre: s.nombre, actividad: pl.nombre || s.plan || '', color: pl.color || '#999999',
+    planId: pl.id || s.planId || '', activo: !!s.activo,
+    pagos: (pagos||[]).slice().sort((a,b)=>String(b.mesKey).localeCompare(String(a.mesKey))).slice(0,12)
+      .map(p=>({mes:p.mesKey, monto:Number(p.monto)||0, fecha:p.fecha||'', tarifa:p.tarifa||'', libre:!!p.libre})),
+    actualizado: hoyISO()
+  };
+}
+async function sincronizarPanelSocio(id, claveAnt){
+  try{
+    const s = socios.find(x=>x.id===id); if(!s) return;
+    const clave = await claveSocio(s);
+    if(claveAnt && claveAnt !== clave) await db.collection('panel_onix').doc(claveAnt).delete();
+    if(!clave) return;
+    const snap = await db.collection('pagos_onix').where('socioId','==',id).get();
+    const arr = []; snap.forEach(d=>arr.push(d.data()));
+    await db.collection('panel_onix').doc(clave).set(construirPanel(s, arr));
+  }catch(err){ console.warn('No se pudo actualizar el panel del socio:', err); }
+}
+async function sincronizarTodosPaneles(){
+  const snap = await db.collection('pagos_onix').where('uid','==',currentUid).get();
+  const por = {}; snap.forEach(d=>{ const x = d.data(); (por[x.socioId] = por[x.socioId] || []).push(x); });
+  let n = 0, sin = 0;
+  for(const s of socios){
+    const c = await claveSocio(s);
+    if(!c){ sin++; continue; }
+    await db.collection('panel_onix').doc(c).set(construirPanel(s, por[s.id]));
+    n++;
+  }
+  return {n, sin};
+}
+
+/* ---- lado Caro: pestaña Asistencias ---- */
+let asisModo = 'dia';
+async function renderAsistencias(){
+  const mes = $('asisMes').value || hoyISO().slice(0,7);
+  $('asisMes').value = mes;
+  $('asisContenido').innerHTML = '<p style="color:var(--text-muted);">Cargando...</p>';
+  const snap = await db.collection('asistencias_onix').where('uid','==',currentUid).where('mes','==',mes).get();
+  const regs = []; snap.forEach(d=>regs.push(d.data()));
+  const mapa = {};
+  for(const s of socios){ const c = await claveSocio(s); if(c) mapa[c] = s; }
+  const hoy = hoyISO();
+  const deHoy = regs.filter(r=>r.fecha===hoy).length;
+  $('asisResumen').innerHTML = `<b>${regs.length}</b> asistencias en ${esc(nombreMes(mes))} · hoy: <b>${deHoy}</b>`;
+  $('btnAsisDia').className = 'btn btn-sm ' + (asisModo==='dia' ? 'btn-primary' : 'btn-ghost');
+  $('btnAsisSocio').className = 'btn btn-sm ' + (asisModo==='socio' ? 'btn-primary' : 'btn-ghost');
+  if(asisModo === 'dia'){
+    if(!regs.length){ $('asisContenido').innerHTML = '<p style="color:var(--text-muted);">Todavía no hay asistencias este mes.</p>'; return; }
+    const dias = {}; regs.forEach(r=>(dias[r.fecha] = dias[r.fecha] || []).push(r));
+    $('asisContenido').innerHTML = Object.keys(dias).sort().reverse().map(f=>{
+      const p = f.split('-');
+      const filas = dias[f].sort((a,b)=>String(a.hora).localeCompare(String(b.hora))).map(r=>{
+        const s = mapa[r.clave];
+        return `<div class="pay-row"><span>${esc(r.hora||'')} · ${s ? esc(s.nombre)+' '+esc(s.apellido) : 'Socio eliminado'}</span>${s ? actPill(s) : ''}</div>`;
+      }).join('');
+      return `<h3 style="margin:14px 0 4px;">${p[2]}/${p[1]} · ${dias[f].length}</h3>${filas}`;
+    }).join('');
+  } else {
+    const cuenta = {}, ultima = {};
+    regs.forEach(r=>{ cuenta[r.clave] = (cuenta[r.clave]||0) + 1; if(!ultima[r.clave] || r.fecha > ultima[r.clave]) ultima[r.clave] = r.fecha; });
+    const lista = socios.filter(s=>s.activo).map(s=>({s, n: cuenta[s._c]||0, u: ultima[s._c]||''}))
+      .sort((a,b)=>b.n-a.n || (a.s.apellido+a.s.nombre).localeCompare(b.s.apellido+b.s.nombre,'es',{sensitivity:'base'}));
+    $('asisContenido').innerHTML = lista.map(x=>`<div class="pay-row"><span>${esc(x.s.nombre)} ${esc(x.s.apellido)}<small>${x.u ? 'Última: '+x.u.split('-').reverse().slice(0,2).join('/') : 'Sin asistencias este mes'}</small></span><span style="text-align:right;">${actPill(x.s)}<br><b>${x.n}</b></span></div>`).join('') || '<p style="color:var(--text-muted);">No hay socios activos.</p>';
+  }
+}
+$('asisMes').addEventListener('change', renderAsistencias);
+$('btnAsisDia').addEventListener('click', ()=>{ asisModo='dia'; renderAsistencias(); });
+$('btnAsisSocio').addEventListener('click', ()=>{ asisModo='socio'; renderAsistencias(); });
+
+/* ---- lado Caro: QR, links y cartel ---- */
+function renderQr(){
+  const base = window.location.origin + window.location.pathname;
+  $('linkAsis').value = base + '?asistencia=1';
+  $('linkSocio').value = base + '?socio=1';
+  $('qrBox').innerHTML = '';
+  if(typeof QRCode === 'undefined'){ $('qrBox').textContent = 'No se pudo cargar el generador de QR. Revisá la conexión.'; return; }
+  new QRCode($('qrBox'), {text: $('linkAsis').value, width: 240, height: 240, colorDark:'#111111', colorLight:'#ffffff', correctLevel: QRCode.CorrectLevel.M});
+}
+function qrDataUrl(){
+  const c = $('qrBox').querySelector('canvas');
+  return c ? c.toDataURL('image/png') : (($('qrBox').querySelector('img')||{}).src || '');
+}
+$('copyLinkAsis').addEventListener('click', ()=>{ navigator.clipboard.writeText($('linkAsis').value); toast('Link copiado'); });
+$('copyLinkSocio').addEventListener('click', ()=>{ navigator.clipboard.writeText($('linkSocio').value); toast('Link copiado'); });
+$('logoutBtn2').addEventListener('click', ()=>auth.signOut());
+$('btnQrDescargar').addEventListener('click', ()=>{
+  const u = qrDataUrl(); if(!u){ toast('El QR todavía no está listo', true); return; }
+  const a = document.createElement('a'); a.href = u; a.download = 'qr-asistencia-onix.png'; a.click();
+});
+$('btnQrCartel').addEventListener('click', ()=>{
+  const u = qrDataUrl(); if(!u){ toast('El QR todavía no está listo', true); return; }
+  const logo = getComputedStyle(document.documentElement).getPropertyValue('--logo');
+  const w = window.open('', '_blank'); if(!w){ toast('El navegador bloqueó la ventana', true); return; }
+  w.document.write('<html><head><title>Cartel QR</title><style>@page{size:A4;margin:0}*{-webkit-print-color-adjust:exact;print-color-adjust:exact}body{margin:0;font-family:Arial,sans-serif}.p{height:100vh;background:#0D0D0D;color:#fff;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:28px;text-align:center}.l{width:420px;height:133px;background:'+logo+' center/contain no-repeat}.q{background:#fff;padding:26px;border-radius:28px}.q img{width:420px;height:420px;display:block}h1{font-size:50px;margin:0;letter-spacing:2px;text-transform:uppercase}b{color:#FFDD67}</style></head><body><div class="p"><div class="l"></div><div class="q"><img src="'+u+'"></div><h1>Escaneá y marcá tu <b>asistencia</b></h1><p style="font-size:22px;color:#BDBDB6;margin:0">Abrí la cámara del celular y apuntá al código</p></div><scr'+'ipt>window.onload=function(){setTimeout(function(){print()},400)}<\/scr'+'ipt></body></html>');
+  w.document.close();
+});
+$('btnSyncPaneles').addEventListener('click', async ()=>{
+  toast('Actualizando paneles...');
+  try{
+    const r = await sincronizarTodosPaneles();
+    toast(r.n + ' paneles actualizados' + (r.sin ? ' · ' + r.sin + ' socios sin DNI o fecha de nacimiento' : ''));
+  }catch(err){ toast('No se pudo actualizar: ' + err.message, true); }
+});
+
+/* ---- lado socio: ingreso, asistencia y panel ---- */
+let socEstado = null;
+async function leerAsistenciasMes(clave){
+  const hoy = hoyISO(), p = hoy.split('-'), ult = Number(p[2]), fechas = [];
+  for(let d=1; d<=ult; d++) fechas.push(p[0]+'-'+p[1]+'-'+pad2(d));
+  const docs = await Promise.all(fechas.map(f=>db.collection('asistencias_onix').doc(clave+'_'+f).get()));
+  return fechas.filter((f,i)=>docs[i].exists);
+}
+async function registrarAsistencia(clave, panel){
+  const fecha = hoyISO(), ahora = new Date();
+  try{
+    await db.collection('asistencias_onix').doc(clave+'_'+fecha).set({
+      clave, fecha, mes: fecha.slice(0,7), hora: pad2(ahora.getHours())+':'+pad2(ahora.getMinutes()),
+      planId: panel.planId||'', plan: panel.actividad||'', uid: OWNER_UID,
+      creado: firebase.firestore.FieldValue.serverTimestamp()
+    });
+    return true;
+  }catch(err){ console.warn('Asistencia no registrada:', err); return false; }
+}
+function renderCal(asist){
+  const hoy = hoyISO(), p = hoy.split('-').map(Number);
+  const dias = new Date(p[0], p[1], 0).getDate(), off = (new Date(p[0], p[1]-1, 1).getDay()+6)%7;
+  let h = ['L','M','M','J','V','S','D'].map(x=>`<span class="h">${x}</span>`).join('');
+  for(let i=0;i<off;i++) h += '<span style="background:none"></span>';
+  for(let d=1; d<=dias; d++){
+    const f = p[0]+'-'+pad2(p[1])+'-'+pad2(d);
+    h += `<span class="${asist.includes(f)?'on':''} ${f===hoy?'hoy':''}">${d}</span>`;
+  }
+  return h;
+}
+function renderPanelSocio(msg){
+  const {p, asist} = socEstado, mes = hoyISO().slice(0,7), hoy = hoyISO();
+  const pagoMes = (p.pagos||[]).find(x=>x.mes===mes);
+  const estado = !p.activo ? ['pend','Cuenta dada de baja'] : pagoMes ? ['ok', pagoMes.libre ? 'Mes libre' : 'Cuota al día'] : ['pend','Cuota pendiente'];
+  $('socCheckin').innerHTML = msg || '';
+  $('socCard').innerHTML = `<div class="logo"></div><div class="nm">${esc(p.nombre)}</div><div style="margin-top:8px;"><span class="act-pill" style="background:${esc(p.color)};color:${textoSobre(p.color)}">${esc(p.actividad)}</span></div><span class="soc-stat ${estado[0]}">${estado[1]} · ${esc(nombreMes(mes))}</span>`;
+  $('socMesTitulo').textContent = 'Asistencias de ' + nombreMes(mes);
+  $('socCal').innerHTML = renderCal(asist);
+  $('socAsisTxt').innerHTML = `Este mes viniste <b>${asist.length}</b> ${asist.length===1?'vez':'veces'}.`;
+  $('socPagos').innerHTML = (p.pagos||[]).length ? p.pagos.map(x=>`<div class="pay-row"><span style="text-transform:capitalize;">${esc(nombreMes(x.mes))}${x.tarifa==='fuera'?' · fuera de término':''}<small>${x.fecha ? esc(x.fecha.split('-').reverse().join('/')) : ''}</small></span><b>${x.libre ? 'Libre' : fmtMoney(x.monto)}</b></div>`).join('') : '<p style="color:var(--text-muted);font-size:14px;">Todavía no hay pagos registrados.</p>';
+  $('btnSocMarcar').classList.toggle('hidden', !p.activo || asist.includes(hoy));
+}
+async function cargarPanelSocio(clave, auto){
+  const d = await db.collection('panel_onix').doc(clave).get();
+  if(!d.exists) return false;
+  const p = d.data(), hoy = hoyISO();
+  const asist = await leerAsistenciasMes(clave);
+  socEstado = {clave, p, asist};
+  let msg = '';
+  if(auto){
+    if(asist.includes(hoy)) msg = '<div class="checkin"><b>Ya estaba registrada</b>Tu asistencia de hoy ya figuraba ✓</div>';
+    else if(!p.activo) msg = '<div class="checkin"><b>Sin registrar</b>Tu cuenta figura de baja. Consultá en el gimnasio.</div>';
+    else if(await registrarAsistencia(clave, p)){ asist.push(hoy); const a = new Date(); msg = `<div class="checkin"><b>¡Listo, ${esc(p.nombre)}!</b>Asistencia registrada · ${pad2(a.getHours())}:${pad2(a.getMinutes())}</div>`; }
+    else msg = '<div class="checkin"><b>No pudimos registrarla</b>Probá de nuevo o avisá en el gimnasio.</div>';
+  }
+  $('socLogin').classList.add('hidden'); $('socPanel').classList.remove('hidden');
+  renderPanelSocio(msg);
+  return true;
+}
+async function initSocioPublico(auto){
+  $('socioScreen').style.display = 'block';
+  $('btnSocEntrar').addEventListener('click', async ()=>{
+    $('socError').innerHTML = '';
+    const dni = $('socDni').value, nac = $('socNac').value;
+    if(!dni.trim() || !nac){ $('socError').innerHTML = '<div class="error-msg">Completá tu DNI y tu fecha de nacimiento.</div>'; return; }
+    $('btnSocEntrar').disabled = true;
+    try{
+      const clave = await claveDe(dni, nac);
+      if(await cargarPanelSocio(clave, auto)) lsSet(clave);
+      else $('socError').innerHTML = '<div class="error-msg">No encontramos un socio con esos datos. Revisalos o consultá en el gimnasio.</div>';
+    }catch(err){ console.error(err); $('socError').innerHTML = '<div class="error-msg">No se pudo conectar. Probá de nuevo.</div>'; }
+    $('btnSocEntrar').disabled = false;
+  });
+  $('btnSocMarcar').addEventListener('click', async ()=>{
+    const {clave, p, asist} = socEstado;
+    if(await registrarAsistencia(clave, p)){ asist.push(hoyISO()); renderPanelSocio('<div class="checkin"><b>¡Listo, ' + esc(p.nombre) + '!</b>Asistencia registrada</div>'); }
+    else toast('No se pudo registrar la asistencia', true);
+  });
+  $('btnSocSalir').addEventListener('click', ()=>{ lsSet(null); location.reload(); });
+  const guardada = lsGet();
+  if(guardada){
+    try{ if(await cargarPanelSocio(guardada, auto)) return; }catch(err){ console.warn(err); }
+    lsSet(null);
+  }
+}
+
+/* ---------------- routing inicial: ¿socio, inscripción pública o panel? ---------------- */
 const params = new URLSearchParams(window.location.search);
 const esInscripcionPublica = params.get('inscripcion') === '1';
+const esPanelSocio = params.get('socio') === '1' || params.get('asistencia') === '1';
 
-if(esInscripcionPublica){
+if(esPanelSocio){
+  $('loader').classList.add('hidden');
+  initSocioPublico(params.get('asistencia') === '1');
+} else if(esInscripcionPublica){
   $('loader').classList.add('hidden');
   $('inscripcionScreen').style.display = 'flex';
   initInscripcionPublica();
@@ -766,10 +1070,11 @@ document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
     btn.classList.add('active');
     document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));
     $('view-'+btn.dataset.view).classList.remove('hidden');
-    $('viewTitle').textContent = ({dashboard:'Dashboard',actividades:'Actividades',socios:'Socios',cuotas:'Cuotas',inscripciones:'Inscripciones',config:'Configuración'})[btn.dataset.view];
+    $('viewTitle').textContent = ({dashboard:'Dashboard',actividades:'Actividades',asistencias:'Asistencias',socios:'Socios',cuotas:'Cuotas',inscripciones:'Inscripciones',config:'Configuración'})[btn.dataset.view];
     $('sidebar').classList.remove('open'); $('sidebarOverlay').classList.remove('show');
     if(btn.dataset.view==='cuotas') renderCuotas();
     if(btn.dataset.view==='actividades') renderActividades();
+    if(btn.dataset.view==='asistencias') renderAsistencias();
   });
 });
 $('mobileMenuBtn').addEventListener('click', ()=>{ $('sidebar').classList.add('open'); $('sidebarOverlay').classList.add('show'); });
@@ -836,6 +1141,7 @@ function renderConfigForm(){
   $('cfgDireccion').value = gymConfig.direccion||'';
   renderCuentasBancariasForm();
   renderPlanesForm();
+  renderQr();
 }
 $('btnGuardarDatos').addEventListener('click', ()=> guardarCfg({
   nombre:$('cfgNombre').value, telefono:$('cfgTelefono').value, email:$('cfgEmail').value,
@@ -897,6 +1203,7 @@ $('btnGuardarPlanes').addEventListener('click', async ()=>{
   if(planes.some(p=>!String(p.nombre).trim())){ toast('Todas las actividades necesitan nombre', true); return; }
   await guardarCfg({planes}, 'Actividades guardadas');
   renderPlanesForm();
+  sincronizarTodosPaneles().catch(e=>console.warn(e));
 });
 function fillPlanSelects(){
   $('socioPlan').innerHTML = planes.map(p=>`<option value="${esc(p.id)}">${esc(p.nombre)} — ${p.precio?fmtMoney(p.precio):'a consultar'}</option>`).join('');
@@ -1043,10 +1350,12 @@ function abrirModalSocio(id){
 }
 $('btnGuardarSocio').addEventListener('click', async ()=>{
   const id = $('socioId').value;
+  let idSync = id, claveAnt = null;
   const btn = $('btnGuardarSocio');
   btn.innerHTML = '<span class="spinner"></span>';
   try{
     const existente = socios.find(x=>x.id===id);
+    if(existente) claveAnt = await claveSocio(existente);
     const data = {
       nombre: $('socioNombre').value.trim(),
       apellido: $('socioApellido').value.trim(),
@@ -1074,10 +1383,11 @@ $('btnGuardarSocio').addEventListener('click', async ()=>{
       await db.collection('socios_onix').doc(id).update(data);
     } else {
       data.fechaInscripcion = firebase.firestore.FieldValue.serverTimestamp();
-      await db.collection('socios_onix').add(data);
+      idSync = (await db.collection('socios_onix').add(data)).id;
     }
     closeModal('modalSocio');
     await cargarSocios();
+    await sincronizarPanelSocio(idSync, claveAnt);
     toast('Socio guardado');
   }catch(err){
     toast('Error al guardar: '+err.message, true);
@@ -1087,7 +1397,9 @@ $('btnGuardarSocio').addEventListener('click', async ()=>{
 $('btnEliminarSocio').addEventListener('click', async ()=>{
   const id = $('socioId').value;
   if(!confirm('¿Seguro que querés eliminar este socio?')) return;
+  const sDel = socios.find(x=>x.id===id); const cDel = sDel ? await claveSocio(sDel) : null;
   await db.collection('socios_onix').doc(id).delete();
+  if(cDel){ try{ await db.collection('panel_onix').doc(cDel).delete(); }catch(e){ console.warn(e); } }
   closeModal('modalSocio');
   await cargarSocios();
   toast('Socio eliminado');
@@ -1427,6 +1739,7 @@ $('btnConfirmarPago').addEventListener('click', async ()=>{
       await db.collection('pagos_onix').add(data);
     }
     delete cuotasCache[key]; // invalidar cache de ese mes
+    sincronizarPanelSocio(socioId);
     closeModal('modalPago');
     await renderCuotas();
     actualizarStatsRecaudacionDashboard();
@@ -1450,6 +1763,7 @@ async function marcarLibre(socioId){
     creado: firebase.firestore.FieldValue.serverTimestamp()
   });
   delete cuotasCache[key];
+  sincronizarPanelSocio(socioId);
   await renderCuotas();
   actualizarStatsRecaudacionDashboard();
   toast('Marcado como Libre');
@@ -1460,6 +1774,7 @@ async function quitarLibre(socioId){
   if(!pago) return;
   await db.collection('pagos_onix').doc(pago.id).delete();
   delete cuotasCache[key];
+  sincronizarPanelSocio(socioId);
   await renderCuotas();
   actualizarStatsRecaudacionDashboard();
   toast('Se quitó el estado Libre, vuelve a quedar Pendiente');
@@ -1563,7 +1878,7 @@ async function aprobarInscripcion(id){
   if(i.dni && socios.some(s=>s.dni===i.dni) && !confirm('Ya hay un socio cargado con ese DNI. ¿Agregarlo igual?')) return;
   try{
     const pl = planDe(i);
-    await db.collection('socios_onix').add({
+    const refNuevo = await db.collection('socios_onix').add({
       nombre:i.nombre, apellido:i.apellido, dni:i.dni, telefono:i.telefono,
       fechaNacimiento:i.fechaNacimiento||'', fechaInicio: hoyISO(),
       planId: pl ? pl.id : (i.planId||''), plan: pl ? pl.nombre : (i.plan||''), activo:true,
@@ -1571,6 +1886,7 @@ async function aprobarInscripcion(id){
     });
     await db.collection('inscripciones_onix').doc(id).update({estado:'aprobada'});
     await cargarSocios();
+    await sincronizarPanelSocio(refNuevo.id);
     toast('Socio aprobado y agregado');
   }catch(err){ toast('No se pudo aprobar: '+err.message, true); }
 }
