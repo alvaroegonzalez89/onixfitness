@@ -580,7 +580,7 @@ h1,h2,h3,.display,.stat-card .num,.month-label,.brand-name,.plan-option .pname,.
     <div id="socPanel" class="hidden">
       <div id="socCheckin"></div>
       <div class="soc-card" id="socCard"></div>
-      <div class="card"><div class="card-head"><h2 id="socMesTitulo"></h2></div><div class="cal" id="socCal"></div><p id="socAsisTxt" style="margin-top:12px;font-size:14px;"></p></div>
+      <div class="card"><div class="card-head" style="display:flex;justify-content:space-between;align-items:center;gap:8px;"><button class="btn btn-ghost btn-sm" id="socMesPrev" aria-label="Mes anterior">‹</button><h2 id="socMesTitulo" style="text-transform:capitalize;"></h2><button class="btn btn-ghost btn-sm" id="socMesNext" aria-label="Mes siguiente">›</button></div><div class="cal" id="socCal"></div><p id="socAsisTxt" style="margin-top:12px;font-size:14px;"></p></div>
       <div class="card"><div class="card-head"><h2>Mis pagos</h2></div><div id="socPagos"></div></div>
       <button class="btn btn-primary btn-block hidden" id="btnSocMarcar">Marcar asistencia de hoy</button>
       <button class="btn btn-ghost btn-block" id="btnSocSalir">Salir de este dispositivo</button>
@@ -941,9 +941,11 @@ $('btnSyncPaneles').addEventListener('click', async ()=>{
 
 /* ---- lado socio: ingreso, asistencia y panel ---- */
 let socEstado = null;
-async function leerAsistenciasMes(clave){
-  const hoy = hoyISO(), p = hoy.split('-'), ult = Number(p[2]), fechas = [];
-  for(let d=1; d<=ult; d++) fechas.push(p[0]+'-'+p[1]+'-'+pad2(d));
+async function leerAsistenciasMes(clave, mes){
+  const hoy = hoyISO(), p = mes.split('-').map(Number);
+  const ult = mes === hoy.slice(0,7) ? Number(hoy.split('-')[2]) : new Date(p[0], p[1], 0).getDate();
+  const fechas = [];
+  for(let d=1; d<=ult; d++) fechas.push(mes + '-' + pad2(d));
   const docs = await Promise.all(fechas.map(f=>db.collection('asistencias_onix').doc(clave+'_'+f).get()));
   return fechas.filter((f,i)=>docs[i].exists);
 }
@@ -958,35 +960,48 @@ async function registrarAsistencia(clave, panel){
     return true;
   }catch(err){ console.warn('Asistencia no registrada:', err); return false; }
 }
-function renderCal(asist){
-  const hoy = hoyISO(), p = hoy.split('-').map(Number);
+function renderCal(asist, mes){
+  const hoy = hoyISO(), p = mes.split('-').map(Number);
   const dias = new Date(p[0], p[1], 0).getDate(), off = (new Date(p[0], p[1]-1, 1).getDay()+6)%7;
   let h = ['L','M','M','J','V','S','D'].map(x=>`<span class="h">${x}</span>`).join('');
   for(let i=0;i<off;i++) h += '<span style="background:none"></span>';
   for(let d=1; d<=dias; d++){
-    const f = p[0]+'-'+pad2(p[1])+'-'+pad2(d);
+    const f = mes + '-' + pad2(d);
     h += `<span class="${asist.includes(f)?'on':''} ${f===hoy?'hoy':''}">${d}</span>`;
   }
   return h;
 }
 function renderPanelSocio(msg){
-  const {p, asist} = socEstado, mes = hoyISO().slice(0,7), hoy = hoyISO();
+  const {p, asist, mesVista, asistVista} = socEstado, mes = hoyISO().slice(0,7), hoy = hoyISO();
   const pagoMes = (p.pagos||[]).find(x=>x.mes===mes);
   const estado = !p.activo ? ['pend','Cuenta dada de baja'] : pagoMes ? ['ok', pagoMes.libre ? 'Mes libre' : 'Cuota al día'] : ['pend','Cuota pendiente'];
   $('socCheckin').innerHTML = msg || '';
   $('socCard').innerHTML = `<div class="logo"></div><div class="nm">${esc(p.nombre)}</div><div style="margin-top:8px;"><span class="act-pill" style="background:${esc(p.color)};color:${textoSobre(p.color)}">${esc(p.actividad)}</span></div><span class="soc-stat ${estado[0]}">${estado[1]} · ${esc(nombreMes(mes))}</span>`;
-  $('socMesTitulo').textContent = 'Asistencias de ' + nombreMes(mes);
-  $('socCal').innerHTML = renderCal(asist);
-  $('socAsisTxt').innerHTML = `Este mes viniste <b>${asist.length}</b> ${asist.length===1?'vez':'veces'}.`;
+  $('socMesTitulo').textContent = nombreMes(mesVista);
+  $('socCal').innerHTML = renderCal(asistVista, mesVista);
+  $('socAsisTxt').innerHTML = `En ${esc(nombreMes(mesVista))} ${mesVista===mes ? 'viniste' : 'viniste'} <b>${asistVista.length}</b> ${asistVista.length===1?'vez':'veces'}.`;
+  $('socMesNext').disabled = mesVista >= mes;
+  const lim = new Date(); lim.setDate(1); lim.setMonth(lim.getMonth()-12);
+  $('socMesPrev').disabled = mesVista <= lim.getFullYear() + '-' + pad2(lim.getMonth()+1);
   $('socPagos').innerHTML = (p.pagos||[]).length ? p.pagos.map(x=>`<div class="pay-row"><span style="text-transform:capitalize;">${esc(nombreMes(x.mes))}${x.tarifa==='fuera'?' · fuera de término':''}<small>${x.fecha ? esc(x.fecha.split('-').reverse().join('/')) : ''}</small></span><b>${x.libre ? 'Libre' : fmtMoney(x.monto)}</b></div>`).join('') : '<p style="color:var(--text-muted);font-size:14px;">Todavía no hay pagos registrados.</p>';
   $('btnSocMarcar').classList.toggle('hidden', !p.activo || asist.includes(hoy));
+}
+async function cambiarMesSocio(delta){
+  const e = socEstado, ahora = hoyISO().slice(0,7);
+  const q = e.mesVista.split('-').map(Number), d = new Date(q[0], q[1]-1+delta, 1);
+  const nuevo = d.getFullYear() + '-' + pad2(d.getMonth()+1);
+  if(nuevo > ahora) return;
+  try{ e.asistVista = nuevo === ahora ? e.asist : await leerAsistenciasMes(e.clave, nuevo); }
+  catch(err){ toast('No se pudo cargar ese mes', true); return; }
+  e.mesVista = nuevo;
+  renderPanelSocio($('socCheckin').innerHTML);
 }
 async function cargarPanelSocio(clave, auto){
   const d = await db.collection('panel_onix').doc(clave).get();
   if(!d.exists) return false;
   const p = d.data(), hoy = hoyISO();
-  const asist = await leerAsistenciasMes(clave);
-  socEstado = {clave, p, asist};
+  const asist = await leerAsistenciasMes(clave, hoy.slice(0,7));
+  socEstado = {clave, p, asist, mesVista: hoy.slice(0,7), asistVista: asist};
   let msg = '';
   if(auto){
     if(asist.includes(hoy)) msg = '<div class="checkin"><b>Ya estaba registrada</b>Tu asistencia de hoy ya figuraba ✓</div>';
@@ -1014,9 +1029,11 @@ async function initSocioPublico(auto){
   });
   $('btnSocMarcar').addEventListener('click', async ()=>{
     const {clave, p, asist} = socEstado;
-    if(await registrarAsistencia(clave, p)){ asist.push(hoyISO()); renderPanelSocio('<div class="checkin"><b>¡Listo, ' + esc(p.nombre) + '!</b>Asistencia registrada</div>'); }
+    if(await registrarAsistencia(clave, p)){ asist.push(hoyISO()); socEstado.mesVista = hoyISO().slice(0,7); socEstado.asistVista = asist; renderPanelSocio('<div class="checkin"><b>¡Listo, ' + esc(p.nombre) + '!</b>Asistencia registrada</div>'); }
     else toast('No se pudo registrar la asistencia', true);
   });
+  $('socMesPrev').addEventListener('click', ()=>cambiarMesSocio(-1));
+  $('socMesNext').addEventListener('click', ()=>cambiarMesSocio(1));
   $('btnSocSalir').addEventListener('click', ()=>{ lsSet(null); location.reload(); });
   const guardada = lsGet();
   if(guardada){
