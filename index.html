@@ -535,6 +535,15 @@ h1,h2,h3,.display,.stat-card .num,.month-label,.brand-name,.plan-option .pname,.
         <p style="color:var(--text-muted);font-size:12px;margin-top:12px;">El QR apunta a la dirección desde la que estás usando el sistema ahora. Imprimilo recién cuando el sistema esté en su dirección definitiva.</p>
       </div>
       <div class="card">
+        <div class="card-head"><h2>Regla de asistencia y cuota</h2></div>
+        <p style="color:var(--text-muted);font-size:13px;margin-bottom:12px;">Si el socio todavía no pagó la cuota del mes y ya pasó el día indicado, puede marcar solo esta cantidad de clases. En la siguiente le aparece un aviso para regularizar su cuota.</p>
+        <div class="grid-2">
+          <div class="field"><label>Clases que puede marcar sin pagar</label><input type="number" id="cfgAsisLibres" min="0"></div>
+          <div class="field"><label>Se controla después del día</label><input type="number" id="cfgDiaLimite" min="0" max="31"></div>
+        </div>
+        <button class="btn btn-primary" id="btnGuardarRegla">Guardar regla</button>
+      </div>
+      <div class="card">
         <div class="card-head"><h2>Datos del gimnasio</h2></div>
         <div class="grid-2">
           <div class="field"><label>Nombre</label><input type="text" id="cfgNombre"></div>
@@ -563,6 +572,19 @@ h1,h2,h3,.display,.stat-card .num,.month-label,.brand-name,.plan-option .pname,.
 
     </section>
   </main>
+</div>
+
+<!-- ============ MODAL QUITAR ACTIVIDAD ============ -->
+<div class="modal-overlay" id="modalMoverSocios">
+  <div class="modal">
+    <div class="modal-head"><h3>Quitar actividad</h3><button class="modal-close" data-close-modal="modalMoverSocios">✕</button></div>
+    <div class="modal-body">
+      <p id="moverTexto" style="margin-bottom:14px;"></p>
+      <div class="field"><label>Pasar sus socios a</label><select id="moverDestino"></select></div>
+      <p style="color:var(--text-muted);font-size:12px;">Los pagos y asistencias ya registrados no se tocan. La cuota de los próximos meses será la de la nueva actividad.</p>
+    </div>
+    <div class="modal-foot"><button class="btn btn-ghost" data-close-modal="modalMoverSocios">Cancelar</button><button class="btn btn-danger" id="btnConfirmarMover">Pasar socios y quitar</button></div>
+  </div>
 </div>
 
 <!-- ============ PANEL DEL SOCIO / ASISTENCIA ============ -->
@@ -724,14 +746,14 @@ const db = firebase.firestore();
 const OWNER_UID = "iZuxG3Cj3hbT06o4b4b5ckwz6gu2"; // Caro (dueña de Onix). Todos los datos se guardan con este uid.
 const ADMIN_UID = "DT8MhapkcmVaFvh7JUTlriWyXHL2";  // Álvaro (soporte AppSur)
 const DEFAULT_PLANES = [
-  {id:'kropp', nombre:'Kropp 3D Training', precio:40000, precioFuera:46000, color:'#F4B400', horario:'Lun, Mié y Vie: 8:00, 15:30 y 20:30 hs', mostrarHorario:true},
-  {id:'hiper', nombre:'Hipertrofia Funcional', precio:40000, precioFuera:46000, color:'#E53935', horario:'Lun, Mié y Vie 14:30 hs · Mar y Jue 15:00 hs', mostrarHorario:true},
-  {id:'mix', nombre:'Mix Fitness', precio:40000, precioFuera:46000, color:'#8E44AD', horario:'Lun, Mié y Vie 18:30 hs', mostrarHorario:true},
-  {id:'gap', nombre:'GAP', precio:40000, precioFuera:46000, color:'#FF7A00', horario:'Lun, Mié y Vie 19:30 hs', mostrarHorario:true},
-  {id:'cross', nombre:'Cross Training', precio:40000, precioFuera:46000, color:'#1E88E5', horario:'Mar y Jue 19:00 hs', mostrarHorario:true},
-  {id:'kids', nombre:'Funcional Kids (7 a 12 años)', precio:35000, precioFuera:0, color:'#2EBD6B', horario:'Mar y Jue 18:00 hs', mostrarHorario:false},
-  {id:'inic', nombre:'Iniciación Deportiva (3 a 6 años)', precio:30000, precioFuera:0, color:'#E91E8C', horario:'Lun y Mié 17:30 hs', mostrarHorario:false},
-  {id:'pers', nombre:'Entrenamiento Personalizado', precio:0, precioFuera:0, color:'#00ACC1', horario:'A coordinar', mostrarHorario:true}
+  {id:'kropp', nombre:'Kropp 3D Training', precio:40000, precioFuera:46000, cupo:20, color:'#F4B400', horario:'Lun, Mié y Vie: 8:00, 15:30 y 20:30 hs', mostrarHorario:true},
+  {id:'hiper', nombre:'Hipertrofia Funcional', precio:40000, precioFuera:46000, cupo:20, color:'#E53935', horario:'Lun, Mié y Vie 14:30 hs · Mar y Jue 15:00 hs', mostrarHorario:true},
+  {id:'mix', nombre:'Mix Fitness', precio:40000, precioFuera:46000, cupo:20, color:'#8E44AD', horario:'Lun, Mié y Vie 18:30 hs', mostrarHorario:true},
+  {id:'gap', nombre:'GAP', precio:40000, precioFuera:46000, cupo:20, color:'#FF7A00', horario:'Lun, Mié y Vie 19:30 hs', mostrarHorario:true},
+  {id:'cross', nombre:'Cross Training', precio:40000, precioFuera:46000, cupo:20, color:'#1E88E5', horario:'Mar y Jue 19:00 hs', mostrarHorario:true},
+  {id:'kids', nombre:'Funcional Kids (7 a 12 años)', precio:35000, precioFuera:0, cupo:20, color:'#2EBD6B', horario:'Mar y Jue 18:00 hs', mostrarHorario:false},
+  {id:'inic', nombre:'Iniciación Deportiva (3 a 6 años)', precio:30000, precioFuera:0, cupo:20, color:'#E91E8C', horario:'Lun y Mié 17:30 hs', mostrarHorario:false},
+  {id:'pers', nombre:'Entrenamiento Personalizado', precio:0, precioFuera:0, cupo:20, color:'#00ACC1', horario:'A coordinar', mostrarHorario:true}
 ];
 // Escapa texto antes de meterlo en innerHTML (los datos de inscripciones vienen de un formulario público).
 function esc(t){ return String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -739,6 +761,9 @@ function textoSobre(hex){ const h=String(hex||'#999').replace('#',''); const n=p
 function planDe(s){ return planes.find(p=>p.id===s.planId) || planes.find(p=>p.nombre===s.plan); }
 function colorPlan(s){ const p=planDe(s); return (p&&p.color)||'#BDBDB6'; }
 function actPill(s){ const p=planDe(s); if(!p) return esc(s.plan||'—'); return `<span class="act-pill" style="background:${esc(p.color)};color:${textoSobre(p.color)}">${esc(p.nombre)}</span>`; }
+function cupoDe(p){ return Number.isFinite(p.cupo) ? p.cupo : 20; }
+function ocupacion(p){ return socios.filter(s=>s.activo && (planDe(s)||{}).id===p.id).length; }
+function actividadLlena(p){ const c = cupoDe(p); return c > 0 && ocupacion(p) >= c; }
 function cumpleFiltroAct(s,id){ const v=$(id).value; return !v || (planDe(s)||{}).id===v; }
 function pubPlan(p){ return {id:p.id,nombre:p.nombre,precio:Number(p.precio)||0,color:p.color||'#999999',horario:p.mostrarHorario?(p.horario||''):''}; }
 
@@ -975,7 +1000,7 @@ function renderPanelSocio(msg){
   const {p, asist, mesVista, asistVista} = socEstado, mes = hoyISO().slice(0,7), hoy = hoyISO();
   const pagoMes = (p.pagos||[]).find(x=>x.mes===mes);
   const estado = !p.activo ? ['pend','Cuenta dada de baja'] : pagoMes ? ['ok', pagoMes.libre ? 'Mes libre' : 'Cuota al día'] : ['pend','Cuota pendiente'];
-  $('socCheckin').innerHTML = msg || '';
+  $('socCheckin').innerHTML = msg || (bloqueoAsistencia() ? avisoBloqueo() : '');
   $('socCard').innerHTML = `<div class="logo"></div><div class="nm">${esc(p.nombre)}</div><div style="margin-top:8px;"><span class="act-pill" style="background:${esc(p.color)};color:${textoSobre(p.color)}">${esc(p.actividad)}</span></div><span class="soc-stat ${estado[0]}">${estado[1]} · ${esc(nombreMes(mes))}</span>`;
   $('socMesTitulo').textContent = nombreMes(mesVista);
   $('socCal').innerHTML = renderCal(asistVista, mesVista);
@@ -984,7 +1009,7 @@ function renderPanelSocio(msg){
   const lim = new Date(); lim.setDate(1); lim.setMonth(lim.getMonth()-12);
   $('socMesPrev').disabled = mesVista <= lim.getFullYear() + '-' + pad2(lim.getMonth()+1);
   $('socPagos').innerHTML = (p.pagos||[]).length ? p.pagos.map(x=>`<div class="pay-row"><span style="text-transform:capitalize;">${esc(nombreMes(x.mes))}${x.tarifa==='fuera'?' · fuera de término':''}<small>${x.fecha ? esc(x.fecha.split('-').reverse().join('/')) : ''}</small></span><b>${x.libre ? 'Libre' : fmtMoney(x.monto)}</b></div>`).join('') : '<p style="color:var(--text-muted);font-size:14px;">Todavía no hay pagos registrados.</p>';
-  $('btnSocMarcar').classList.toggle('hidden', !p.activo || asist.includes(hoy));
+  $('btnSocMarcar').classList.toggle('hidden', !p.activo || asist.includes(hoy) || bloqueoAsistencia());
 }
 async function cambiarMesSocio(delta){
   const e = socEstado, ahora = hoyISO().slice(0,7);
@@ -996,16 +1021,32 @@ async function cambiarMesSocio(delta){
   e.mesVista = nuevo;
   renderPanelSocio($('socCheckin').innerHTML);
 }
+function bloqueoAsistencia(){
+  const {p, asist, reglas} = socEstado, hoy = hoyISO(), mes = hoy.slice(0,7);
+  if(!p.activo || asist.includes(hoy)) return false;
+  if((p.pagos||[]).some(x=>x.mes===mes)) return false;
+  return Number(hoy.split('-')[2]) > reglas.diaLimite && asist.length >= reglas.asisLibres;
+}
+function avisoBloqueo(){
+  const n = socEstado.asist.length, mes = nombreMes(hoyISO().slice(0,7));
+  return `<div class="checkin" style="background:#fff;border:2px solid #F28C00;"><b>Cuota pendiente</b>Ya marcaste ${n} ${n===1?'clase':'clases'} este mes y tu cuota de ${esc(mes)} figura pendiente de pago. Regularizá tu cuota para seguir marcando asistencia.</div>`;
+}
 async function cargarPanelSocio(clave, auto){
   const d = await db.collection('panel_onix').doc(clave).get();
   if(!d.exists) return false;
   const p = d.data(), hoy = hoyISO();
+  let reglas = {asisLibres:2, diaLimite:10};
+  try{
+    const r = await db.collection('planes_pub_onix').doc(OWNER_UID).get();
+    if(r.exists){ const x = r.data(); if(Number.isFinite(x.asisLibres)) reglas.asisLibres = x.asisLibres; if(Number.isFinite(x.diaLimite)) reglas.diaLimite = x.diaLimite; }
+  }catch(e){ console.warn(e); }
   const asist = await leerAsistenciasMes(clave, hoy.slice(0,7));
-  socEstado = {clave, p, asist, mesVista: hoy.slice(0,7), asistVista: asist};
+  socEstado = {clave, p, asist, reglas, mesVista: hoy.slice(0,7), asistVista: asist};
   let msg = '';
   if(auto){
     if(asist.includes(hoy)) msg = '<div class="checkin"><b>Ya estaba registrada</b>Tu asistencia de hoy ya figuraba ✓</div>';
     else if(!p.activo) msg = '<div class="checkin"><b>Sin registrar</b>Tu cuenta figura de baja. Consultá en el gimnasio.</div>';
+    else if(bloqueoAsistencia()) msg = avisoBloqueo();
     else if(await registrarAsistencia(clave, p)){ asist.push(hoy); const a = new Date(); msg = `<div class="checkin"><b>¡Listo, ${esc(p.nombre)}!</b>Asistencia registrada · ${pad2(a.getHours())}:${pad2(a.getMinutes())}</div>`; }
     else msg = '<div class="checkin"><b>No pudimos registrarla</b>Probá de nuevo o avisá en el gimnasio.</div>';
   }
@@ -1029,6 +1070,7 @@ async function initSocioPublico(auto){
   });
   $('btnSocMarcar').addEventListener('click', async ()=>{
     const {clave, p, asist} = socEstado;
+    if(bloqueoAsistencia()){ renderPanelSocio(avisoBloqueo()); return; }
     if(await registrarAsistencia(clave, p)){ asist.push(hoyISO()); socEstado.mesVista = hoyISO().slice(0,7); socEstado.asistVista = asist; renderPanelSocio('<div class="checkin"><b>¡Listo, ' + esc(p.nombre) + '!</b>Asistencia registrada</div>'); }
     else toast('No se pudo registrar la asistencia', true);
   });
@@ -1150,7 +1192,9 @@ async function cargarConfig(){
 async function publicarPublico(){
   await db.collection('planes_pub_onix').doc(OWNER_UID).set({
     nombre: gymConfig.nombre||'Onix Fitness', telefono: gymConfig.telefono||'', instagram: gymConfig.instagram||'',
-    uid: OWNER_UID, planes: planes.map(pubPlan)
+    uid: OWNER_UID, planes: planes.map(pubPlan),
+    asisLibres: Number.isFinite(gymConfig.asisLibres) ? gymConfig.asisLibres : 2,
+    diaLimite: Number.isFinite(gymConfig.diaLimite) ? gymConfig.diaLimite : 10
   });
 }
 async function guardarCfg(obj, msg){
@@ -1159,7 +1203,8 @@ async function guardarCfg(obj, msg){
     Object.assign(gymConfig, obj);
     await publicarPublico();
     toast(msg);
-  }catch(err){ toast('No se pudo guardar: '+err.message, true); }
+    return true;
+  }catch(err){ toast('No se pudo guardar: '+err.message, true); return false; }
 }
 function renderConfigForm(){
   $('cfgNombre').value = gymConfig.nombre||'';
@@ -1170,7 +1215,14 @@ function renderConfigForm(){
   renderCuentasBancariasForm();
   renderPlanesForm();
   renderQr();
+  $('cfgAsisLibres').value = Number.isFinite(gymConfig.asisLibres) ? gymConfig.asisLibres : 2;
+  $('cfgDiaLimite').value = Number.isFinite(gymConfig.diaLimite) ? gymConfig.diaLimite : 10;
 }
+$('btnGuardarRegla').addEventListener('click', ()=>{
+  const a = Math.max(0, Math.round(Number($('cfgAsisLibres').value))), d = Math.min(31, Math.max(0, Math.round(Number($('cfgDiaLimite').value))));
+  if(!Number.isFinite(a) || !Number.isFinite(d)){ toast('Revisá los números', true); return; }
+  guardarCfg({asisLibres:a, diaLimite:d}, 'Regla de asistencia guardada');
+})
 $('btnGuardarDatos').addEventListener('click', ()=> guardarCfg({
   nombre:$('cfgNombre').value, telefono:$('cfgTelefono').value, email:$('cfgEmail').value,
   instagram:$('cfgInstagram').value, direccion:$('cfgDireccion').value
@@ -1200,6 +1252,7 @@ function renderPlanesForm(){
         <div class="field"><label>Color</label><input type="color" value="${esc(p.color||'#999999')}" data-plan="${i}" data-f="color" style="height:46px;padding:4px;"></div>
         <div class="field"><label>Precio (en término)</label><input type="number" value="${Number(p.precio)||0}" data-plan="${i}" data-f="precio"></div>
         <div class="field"><label>Precio fuera de término (0 = sin recargo)</label><input type="number" value="${Number(p.precioFuera)||0}" data-plan="${i}" data-f="precioFuera"></div>
+        <div class="field"><label>Cupo máx. de socios (hoy ${ocupacion(p)}) · 0 = sin límite</label><input type="number" min="0" value="${cupoDe(p)}" data-plan="${i}" data-f="cupo"></div>
         <div class="field" style="grid-column:1/-1;"><label>Horario</label><input type="text" value="${esc(p.horario||'')}" data-plan="${i}" data-f="horario"></div>
       </div>
       <label style="display:flex;gap:8px;align-items:center;font-size:13px;margin-bottom:10px;"><input type="checkbox" ${p.mostrarHorario?'checked':''} data-plan="${i}" data-f="mostrarHorario" style="width:16px;height:16px;"> Mostrar el horario al inscribirse</label>
@@ -1211,19 +1264,48 @@ function renderPlanesForm(){
 function leerPlanesForm(){
   document.querySelectorAll('[data-plan]').forEach(inp=>{
     const f = inp.dataset.f, p = planes[inp.dataset.plan]; if(!p) return;
-    p[f] = f==='mostrarHorario' ? inp.checked : (f==='precio'||f==='precioFuera') ? (Number(inp.value)||0) : inp.value;
+    p[f] = f==='mostrarHorario' ? inp.checked : (f==='precio'||f==='precioFuera'||f==='cupo') ? (Number(inp.value)||0) : inp.value;
   });
 }
+let planAQuitar = null;
 function quitarPlan(i){
   leerPlanesForm();
   const p = planes[i];
-  if(socios.some(s=>(planDe(s)||{}).id===p.id)){ toast('No se puede quitar: hay socios en "'+p.nombre+'". Pasalos a otra actividad primero.', true); return; }
-  if(!confirm('¿Quitar la actividad "'+p.nombre+'"? Se aplica cuando toques Guardar actividades.')) return;
-  planes.splice(i,1); renderPlanesForm();
+  const afectados = socios.filter(s=>(planDe(s)||{}).id===p.id);
+  if(!afectados.length){
+    if(!confirm('¿Quitar la actividad "'+p.nombre+'"? Se aplica cuando toques Guardar actividades.')) return;
+    planes.splice(i,1); renderPlanesForm(); return;
+  }
+  const otros = planes.filter((x,idx)=>idx!==i);
+  if(!otros.length){ toast('No podés quitar la única actividad', true); return; }
+  planAQuitar = p.id;
+  $('moverTexto').textContent = '"'+p.nombre+'" tiene '+afectados.length+' socio'+(afectados.length===1?'':'s')+'. Elegí a qué actividad pasarlos.';
+  $('moverDestino').innerHTML = otros.map(x=>`<option value="${esc(x.id)}">${esc(x.nombre)} (${ocupacion(x)}${cupoDe(x)>0?'/'+cupoDe(x):''})</option>`).join('');
+  openModal('modalMoverSocios');
 }
+$('btnConfirmarMover').addEventListener('click', async ()=>{
+  const origen = planes.find(x=>x.id===planAQuitar), destino = planes.find(x=>x.id===$('moverDestino').value);
+  if(!origen || !destino) return;
+  const btn = $('btnConfirmarMover'); btn.disabled = true;
+  try{
+    const afectados = socios.filter(s=>(planDe(s)||{}).id===origen.id);
+    const cupD = cupoDe(destino);
+    if(cupD > 0 && ocupacion(destino) + afectados.filter(s=>s.activo).length > cupD && !confirm('"'+destino.nombre+'" pasaría a tener más de '+cupD+' socios (su cupo). ¿Pasarlos igual?')){ btn.disabled = false; return; }
+    await Promise.all(afectados.map(s=>db.collection('socios_onix').doc(s.id).update({planId:destino.id, plan:destino.nombre})));
+    const previos = planes;
+    planes = planes.filter(x=>x.id!==origen.id);
+    const ok = await guardarCfg({planes}, 'Actividad quitada. Sus socios pasaron a '+destino.nombre);
+    if(!ok){ planes = previos; throw new Error('no se pudo guardar la lista de actividades'); }
+    closeModal('modalMoverSocios');
+    await cargarSocios();
+    renderPlanesForm();
+    sincronizarTodosPaneles().catch(e=>console.warn(e));
+  }catch(err){ toast('No se pudo completar: '+err.message, true); }
+  btn.disabled = false;
+});
 $('btnAgregarPlan').addEventListener('click', ()=>{
   leerPlanesForm();
-  planes.push({id:'p'+Date.now().toString(36), nombre:'', precio:0, precioFuera:0, color:'#999999', horario:'', mostrarHorario:true});
+  planes.push({id:'p'+Date.now().toString(36), nombre:'', precio:0, precioFuera:0, cupo:20, color:'#999999', horario:'', mostrarHorario:true});
   renderPlanesForm();
 });
 $('btnGuardarPlanes').addEventListener('click', async ()=>{
@@ -1380,6 +1462,10 @@ $('btnGuardarSocio').addEventListener('click', async ()=>{
   const id = $('socioId').value;
   let idSync = id, claveAnt = null;
   const btn = $('btnGuardarSocio');
+  const pSel = planes.find(x=>x.id===$('socioPlan').value), actual = socios.find(x=>x.id===id);
+  const yaOcupaba = actual && actual.activo && pSel && (planDe(actual)||{}).id === pSel.id;
+  if(pSel && $('socioActivo').value === 'true' && !yaOcupaba && actividadLlena(pSel)
+     && !confirm('"'+pSel.nombre+'" ya tiene '+ocupacion(pSel)+' de '+cupoDe(pSel)+' socios (cupo completo). ¿Agregarlo igual?')) return;
   btn.innerHTML = '<span class="spinner"></span>';
   try{
     const existente = socios.find(x=>x.id===id);
@@ -1458,7 +1544,7 @@ async function renderActividades(){
     c.items.sort((a,b)=>(a.apellido+' '+a.nombre).localeCompare(b.apellido+' '+b.nombre,'es',{sensitivity:'base'}));
     const filas = c.items.map(s=>`<div class="col-i" data-board-socio="${esc(s.id)}"><span>${esc(s.nombre)} ${esc(s.apellido)}</span><i class="dot ${estadoCuota(s,pagosMes)}"></i></div>`).join('')
       || '<div class="col-i" style="color:var(--text-muted);cursor:default;">Sin socios</div>';
-    return `<div class="col"><div class="col-h" style="background:${esc(c.p.color)};color:${textoSobre(c.p.color)}"><span>${esc(c.p.nombre)}</span><b>${c.items.length}</b></div>${filas}</div>`;
+    return `<div class="col"><div class="col-h" style="background:${esc(c.p.color)};color:${textoSobre(c.p.color)}"><span>${esc(c.p.nombre)}</span><b>${c.p.id && cupoDe(c.p)>0 ? c.items.length+'/'+cupoDe(c.p)+(c.items.length>=cupoDe(c.p)?' · completo':'') : c.items.length}</b></div>${filas}</div>`;
   }).join('');
   document.querySelectorAll('[data-board-socio]').forEach(el=>el.addEventListener('click', ()=>abrirModalSocio(el.dataset.boardSocio)));
 }
@@ -1877,6 +1963,8 @@ function renderInscripciones(){
 async function aprobarInscripcion(id){
   const i = inscripcionesPendientes.find(x=>x.id===id); if(!i) return;
   if(i.dni && socios.some(s=>s.dni===i.dni) && !confirm('Ya hay un socio cargado con ese DNI. ¿Agregarlo igual?')) return;
+  const plCupo = planDe(i);
+  if(plCupo && actividadLlena(plCupo) && !confirm('"'+plCupo.nombre+'" ya tiene '+ocupacion(plCupo)+' de '+cupoDe(plCupo)+' socios (cupo completo). ¿Aprobarlo igual?')) return;
   try{
     const pl = planDe(i);
     const refNuevo = await db.collection('socios_onix').add({
