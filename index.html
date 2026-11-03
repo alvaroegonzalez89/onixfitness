@@ -303,9 +303,9 @@ body{background:var(--bg);}
 .topbar h1{font-size:32px;}
 .btn{border-radius:999px;} .field input,.field select,.field textarea,.sel-filtro{border-radius:12px;}
 th{color:#111;border-bottom:2px solid #111;} tbody tr:hover{background:#FFF8DE;}
-.stats-row .stat-card.orange{background:#0D0D0D var(--chev) right -10px center/auto 130% no-repeat;border:0;}
-.stats-row .stat-card.orange .num{color:#FFDD67;font-size:44px;} .stats-row .stat-card.orange .lbl{color:#BDBDB6;}
-@media(min-width:700px){.stats-row .stat-card.orange{grid-column:span 2;}}
+.stats-row .stat-card.hero{background:#0D0D0D var(--chev) right -10px center/auto 130% no-repeat;border:0;}
+.stats-row .stat-card.hero .num{color:#FFDD67;font-size:44px;} .stats-row .stat-card.hero .lbl{color:#BDBDB6;}
+@media(min-width:700px){.stats-row .stat-card.hero{grid-column:span 2;}}
 #socioScreen{display:none;min-height:100vh;background:var(--bg);padding:14px 14px 40px;}
 .soc-box{width:100%;max-width:460px;margin:0 auto;}
 .soc-card{background:#0D0D0D var(--chev) right -30px bottom -10px/230px no-repeat;color:#fff;border-radius:24px;padding:22px;margin-bottom:14px;}
@@ -329,7 +329,7 @@ th{color:#111;border-bottom:2px solid #111;} tbody tr:hover{background:#FFF8DE;}
   .sidebar .nav-item.active{background:#FFDD67;color:#111;} .sidebar .nav-item.active .icon{color:#111;}
   .mobile-menu-btn{display:none !important;}
   main{padding:18px 14px 110px;} .topbar h1{font-size:26px;}
-  .stats-row{grid-template-columns:1fr 1fr;gap:12px;} .stats-row .stat-card.orange{grid-column:1/-1;}
+  .stats-row{grid-template-columns:1fr 1fr;gap:12px;} .stats-row .stat-card.hero{grid-column:1/-1;}
   .modal-overlay{align-items:flex-end;padding:0;} .modal{max-width:none;border-radius:24px 24px 0 0;max-height:92vh;}
   .btn{min-height:44px;} input,select,textarea{font-size:16px !important;}
 }
@@ -340,6 +340,12 @@ h1,h2,h3,.display,.stat-card .num,.month-label,.brand-name,.plan-option .pname,.
 .btn,.nav-item,.field label,th{font-weight:500;} th{letter-spacing:.8px;}
 .act-pill{font-weight:600;font-size:12.5px;} .pill{font-weight:600;} b,strong{font-weight:600;}
 .col-h{text-transform:none;font-size:16px;font-weight:600;letter-spacing:.3px;}
+@media(max-width:900px){
+  .sidebar{justify-content:flex-start;}
+  .sidebar .nav-item{width:auto;flex:0 0 auto;}
+  .stats-row .stat-card.hero{order:-1;}
+  .stats-row .stat-card:last-child{grid-column:1/-1;}
+}
 </style>
 </head>
 <body>
@@ -396,7 +402,7 @@ h1,h2,h3,.display,.stat-card .num,.month-label,.brand-name,.plan-option .pname,.
     <section id="view-dashboard" class="view">
       <div class="stats-row">
         <div class="stat-card teal"><div class="num" id="statSocios">0</div><div class="lbl">Socios activos</div></div>
-        <div class="stat-card orange">
+        <div class="stat-card orange hero">
           <div class="num" id="statCuotasMes">$0</div>
           <div class="lbl">Recaudado este mes</div>
         </div>
@@ -1137,6 +1143,7 @@ document.querySelectorAll('.nav-item[data-view]').forEach(btn=>{
     btn.classList.add('active');
     document.querySelectorAll('.view').forEach(v=>v.classList.add('hidden'));
     $('view-'+btn.dataset.view).classList.remove('hidden');
+    if(btn.scrollIntoView) btn.scrollIntoView({inline:'center', block:'nearest'});
     $('viewTitle').textContent = ({dashboard:'Dashboard',actividades:'Actividades',asistencias:'Asistencias',socios:'Socios',cuotas:'Cuotas',inscripciones:'Inscripciones',config:'Configuración'})[btn.dataset.view];
     $('sidebar').classList.remove('open'); $('sidebarOverlay').classList.remove('show');
     if(btn.dataset.view==='cuotas') renderCuotas();
@@ -1159,18 +1166,36 @@ async function bootAdminPanel(){
     navigator.clipboard.writeText($('inscLinkBox').value);
     toast('Link copiado');
   });
+  renderQr();
+  await cargarDatosIniciales();
+}
+let listenerInscActivo = false;
+async function cargarDatosIniciales(){
   try{
     await cargarConfig();
     await cargarSocios();
   }catch(err){
     console.error(err);
-    toast('No se pudieron leer los datos. Revisá que las reglas de Firestore con el bloque de Onix estén publicadas. ('+err.message+')', true);
+    mostrarErrorCarga(err);
     return;
   }
-  escucharInscripcionesPendientes();
+  if(!listenerInscActivo){ listenerInscActivo = true; escucharInscripcionesPendientes(); }
   renderStats();
   actualizarStatsRecaudacionDashboard();
   renderConfigForm();
+}
+function mostrarErrorCarga(err){
+  let b = $('errorBanner');
+  if(!b){
+    b = document.createElement('div'); b.id = 'errorBanner';
+    b.style.cssText = 'background:#FFF1CC;border:2px solid #F28C00;border-radius:16px;padding:16px;margin-bottom:16px;font-size:14px;line-height:1.5;';
+    document.querySelector('main').prepend(b);
+  }
+  const permisos = (err && (err.code === 'permission-denied' || /permission/i.test(err.message||'')));
+  b.innerHTML = '<b>No se pudieron cargar los datos.</b><br>' + (permisos
+    ? 'Firestore rechazó la lectura por permisos. Casi siempre es porque las reglas publicadas en Firebase no incluyen el bloque de Onix. Avisale a Álvaro.'
+    : esc((err && err.message) || 'Error desconocido')) + '<br><button class="btn btn-primary btn-sm" id="btnReintentar" style="margin-top:10px;">Reintentar</button>';
+  $('btnReintentar').addEventListener('click', ()=>{ b.remove(); cargarDatosIniciales(); });
 }
 
 /* ---------------- CONFIG ---------------- */
